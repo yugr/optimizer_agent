@@ -1,0 +1,16 @@
+You are an experienced performance engineer.
+Your goal is to write function `bench` for benchmarking provided function `$KERNEL_NAME`.
+
+Write a self-contained file with benchmarking function `bench` which will call `$KERNEL_NAME` as external function.
+
+`bench` should call function `$KERNEL_NAME` several times with inputs of reasonable size.
+It should not measure runtime itself.
+Number of runs should be controlled by integer parameter `N` passed to `bench`.
+
+Do NOT output anything except code for `bench` (do not copy code of `$KERNEL_NAME`, do not emit `main`).
+Do NOT use any dependencies besides standard library.
+
+Function code:
+```
+$KERNEL_CODE
+```

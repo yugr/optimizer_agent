@@ -1,0 +1,8 @@
+Your code does not $WHAT :
+```
+$OUTPUT
+```
+
+Fix the `bench` function.
+
+Do not output anything except fixed `bench` function (do not copy code of `$KERNEL_NAME`, do not emit `main`, etc.).

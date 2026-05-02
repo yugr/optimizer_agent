@@ -1,0 +1,30 @@
+```c
+#include <stdlib.h>
+#include <string.h>
+
+extern void foo(float *a, float *b, float *c, int m, int n, int k);
+
+void bench(int N) {
+    const int m = 128;
+    const int n = 128;
+    const int k = 128;
+
+    float *a = (float *)malloc(m * k * sizeof(float));
+    float *b = (float *)malloc(k * n * sizeof(float));
+    float *c = (float *)malloc(m * n * sizeof(float));
+
+    for (int i = 0; i < m * k; i++)
+        a[i] = (float)(i % 37) * 0.1f - 1.5f;
+    for (int i = 0; i < k * n; i++)
+        b[i] = (float)(i % 41) * 0.1f - 2.0f;
+    memset(c, 0, m * n * sizeof(float));
+
+    for (int run = 0; run < N; run++) {
+        foo(a, b, c, m, n, k);
+    }
+
+    free(a);
+    free(b);
+    free(c);
+}
+```

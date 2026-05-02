@@ -1,0 +1,17 @@
+You are an experienced performance engineer.
+Your goal is to propose optimizations for this function:
+```
+$KERNEL_CODE
+```
+
+$TARGET
+
+As a first step you will only propose a list of $FANOUT most promising, independent optimizations.
+Optimizations can for example include standard loop transforms like tiling
+or function specialization for common cases (like unaliased input arguments).
+Optimizations should not conflict with each other.
+
+Do not try to apply optimizations now.
+
+Output optimizations via numbered list.
+Sort them by expected benefit.

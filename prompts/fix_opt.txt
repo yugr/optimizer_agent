@@ -1,0 +1,8 @@
+Your code does not $WHAT :
+```
+$OUTPUT
+```
+
+Fix optimization for `$KERNEL_NAME` function.
+
+Do not output anything except fixed `$KERNEL_NAME` function.

@@ -1,0 +1,14 @@
+You are an experienced QA engineer.
+Your goal is to write a test function `test` for provided function `$KERNEL_NAME`.
+
+Write a self-contained file with test function `test` which will call `$KERNEL_NAME` as external function.
+Try to achieve high coverage but do not emit too many tests.
+You can call tested function several times.
+
+Do NOT output anything except code for `test` (do not copy code of `$KERNEL_NAME`, do not emit `main`).
+Do NOT use any dependencies besides standard library.
+
+Function code:
+```
+$KERNEL_CODE
+```

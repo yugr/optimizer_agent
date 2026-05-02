@@ -1,0 +1,11 @@
+Here are the 5 best optimizations, sorted by expected benefit:
+
+1. **Loop reorder to `i → s → j` (row-major access pattern)**: The innermost loop currently strides through `b` column-by-column (`b[s*n + j]`), causing poor cache utilization. Reordering to iterate `s` in the middle and `j` innermost makes all three arrays access contiguous memory in the hot loop, dramatically improving cache hit rate and enabling hardware prefetching.
+
+2. **AVX2/SSE SIMD vectorization of the inner `j` loop**: With the reordered loops, the innermost `j` loop accumulates `c[i*n + j] += a[i*k + s] * b[s*n + j]` where `a[i*k + s]` is loop-invariant. This is a scalar-times-vector fused-multiply-add pattern perfectly suited for `_mm256_fmadd_ps` (8 floats at a time). With m=n=k=32, the inner dimension is exactly 32 floats = 4 AVX2 registers, giving near-perfect vectorization with no remainder handling needed.
+
+3. **Hoist `c[i*n + j]` accumulation into a register (local accumulator)**: Currently each iteration reads and writes `c[i*n + j]` through memory. Introducing a local `float acc = 0` for the innermost reduction eliminates repeated store-load round-trips, breaks the memory dependency chain, and lets the compiler/CPU use register-based FMA chaining for higher throughput.
+
+4. **Specialize for the common unaliased case with `__restrict__`**: Declaring `foo(float * __restrict__ a, float * __restrict__ b, float * __restrict__ c, ...)` informs the compiler that the three arrays do not alias. This unblocks auto-vectorization and allows the compiler to reorder loads/stores freely, which it conservatively avoids without the guarantee.
+
+5. **Register tiling over `i` and `j` (e.g. 4×8 micro-kernel)**: For the fixed 32×32×32 benchmark size, processing a tile of output rows simultaneously (e.g. 4 rows of `c` at once) amortizes the cost of loading each `b` row across multiple `a` rows. This increases arithmetic intensity per byte loaded from `b` and allows the CPU's out-of-order engine to overlap independent FMA chains across rows, improving ILP.

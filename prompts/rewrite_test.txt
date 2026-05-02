@@ -1,0 +1,8 @@
+Your code does not $WHAT :
+```
+$OUTPUT
+```
+
+Fix the `test` function.
+
+Do not output anything except fixed `test` function (do not copy code of `$KERNEL_NAME`, do not emit `main`, etc.).

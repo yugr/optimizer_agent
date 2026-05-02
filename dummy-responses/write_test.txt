@@ -1,0 +1,167 @@
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+extern void foo(float *a, float *b, float *c, int m, int n, int k);
+
+static int float_eq(float x, float y, float eps) {
+    return fabsf(x - y) < eps;
+}
+
+void test(void) {
+    /* Test 1: 1x1 * 1x1 */
+    {
+        float a[] = {3.0f};
+        float b[] = {4.0f};
+        float c[] = {0.0f};
+        foo(a, b, c, 1, 1, 1);
+        if (!float_eq(c[0], 12.0f, 1e-4f)) {
+            fprintf(stderr, "Test 1 failed: expected 12, got %f\n", c[0]);
+            exit(1);
+        }
+    }
+
+    /* Test 2: 2x2 * 2x2 */
+    {
+        float a[] = {1, 2, 3, 4};
+        float b[] = {5, 6, 7, 8};
+        float c[4];
+        foo(a, b, c, 2, 2, 2);
+        /* c[0][0] = 1*5+2*7=19, c[0][1]=1*6+2*8=22 */
+        /* c[1][0] = 3*5+4*7=43, c[1][1]=3*6+4*8=50 */
+        float expected[] = {19, 22, 43, 50};
+        for (int i = 0; i < 4; i++) {
+            if (!float_eq(c[i], expected[i], 1e-3f)) {
+                fprintf(stderr, "Test 2 failed at [%d]: expected %f, got %f\n", i, expected[i], c[i]);
+                exit(1);
+            }
+        }
+    }
+
+    /* Test 3: 1x3 * 3x1 (dot product) */
+    {
+        float a[] = {1, 2, 3};
+        float b[] = {4, 5, 6};
+        float c[1];
+        foo(a, b, c, 1, 1, 3);
+        /* 1*4 + 2*5 + 3*6 = 4+10+18 = 32 */
+        if (!float_eq(c[0], 32.0f, 1e-4f)) {
+            fprintf(stderr, "Test 3 failed: expected 32, got %f\n", c[0]);
+            exit(1);
+        }
+    }
+
+    /* Test 4: 2x3 * 3x2 */
+    {
+        float a[] = {1,2,3, 4,5,6};
+        float b[] = {7,8, 9,10, 11,12};
+        float c[4];
+        foo(a, b, c, 2, 2, 3);
+        /* c[0][0]=1*7+2*9+3*11=7+18+33=58 */
+        /* c[0][1]=1*8+2*10+3*12=8+20+36=64 */
+        /* c[1][0]=4*7+5*9+6*11=28+45+66=139 */
+        /* c[1][1]=4*8+5*10+6*12=32+50+72=154 */
+        float expected[] = {58, 64, 139, 154};
+        for (int i = 0; i < 4; i++) {
+            if (!float_eq(c[i], expected[i], 1e-2f)) {
+                fprintf(stderr, "Test 4 failed at [%d]: expected %f, got %f\n", i, expected[i], c[i]);
+                exit(1);
+            }
+        }
+    }
+
+    /* Test 5: zeros matrix */
+    {
+        float a[] = {0,0,0,0};
+        float b[] = {1,2,3,4};
+        float c[4];
+        foo(a, b, c, 2, 2, 2);
+        for (int i = 0; i < 4; i++) {
+            if (!float_eq(c[i], 0.0f, 1e-6f)) {
+                fprintf(stderr, "Test 5 failed at [%d]: expected 0, got %f\n", i, c[i]);
+                exit(1);
+            }
+        }
+    }
+
+    /* Test 6: identity matrix */
+    {
+        float a[] = {1,0, 0,1};
+        float b[] = {5,6, 7,8};
+        float c[4];
+        foo(a, b, c, 2, 2, 2);
+        float expected[] = {5, 6, 7, 8};
+        for (int i = 0; i < 4; i++) {
+            if (!float_eq(c[i], expected[i], 1e-4f)) {
+                fprintf(stderr, "Test 6 failed at [%d]: expected %f, got %f\n", i, expected[i], c[i]);
+                exit(1);
+            }
+        }
+    }
+
+    /* Test 7: 3x2 * 2x3 */
+    {
+        float a[] = {1,2, 3,4, 5,6};
+        float b[] = {1,0,1, 0,1,1};
+        float c[9];
+        foo(a, b, c, 3, 3, 2);
+        /* row0: [1*1+2*0, 1*0+2*1, 1*1+2*1] = [1, 2, 3] */
+        /* row1: [3+0, 0+4, 3+4] = [3, 4, 7] */
+        /* row2: [5+0, 0+6, 5+6] = [5, 6, 11] */
+        float expected[] = {1,2,3, 3,4,7, 5,6,11};
+        for (int i = 0; i < 9; i++) {
+            if (!float_eq(c[i], expected[i], 1e-4f)) {
+                fprintf(stderr, "Test 7 failed at [%d]: expected %f, got %f\n", i, expected[i], c[i]);
+                exit(1);
+            }
+        }
+    }
+
+    /* Test 8: negative values */
+    {
+        float a[] = {-1, 2, -3, 4};
+        float b[] = {1, -1, -1, 1};
+        float c[4];
+        foo(a, b, c, 2, 2, 2);
+        /* c[0][0]=-1*1+2*(-1)=-3, c[0][1]=-1*(-1)+2*1=3 */
+        /* c[1][0]=-3*1+4*(-1)=-7, c[1][1]=-3*(-1)+4*1=7 */
+        float expected[] = {-3, 3, -7, 7};
+        for (int i = 0; i < 4; i++) {
+            if (!float_eq(c[i], expected[i], 1e-4f)) {
+                fprintf(stderr, "Test 8 failed at [%d]: expected %f, got %f\n", i, expected[i], c[i]);
+                exit(1);
+            }
+        }
+    }
+
+    /* Test 9: output already has garbage values (c is overwritten) */
+    {
+        float a[] = {2, 0, 0, 2};
+        float b[] = {3, 0, 0, 3};
+        float c[] = {999, 999, 999, 999};
+        foo(a, b, c, 2, 2, 2);
+        float expected[] = {6, 0, 0, 6};
+        for (int i = 0; i < 4; i++) {
+            if (!float_eq(c[i], expected[i], 1e-4f)) {
+                fprintf(stderr, "Test 9 failed at [%d]: expected %f, got %f\n", i, expected[i], c[i]);
+                exit(1);
+            }
+        }
+    }
+
+    /* Test 10: 1x1 * 1x1 with k=1 */
+    {
+        float a[] = {-2.5f};
+        float b[] = {4.0f};
+        float c[1];
+        foo(a, b, c, 1, 1, 1);
+        if (!float_eq(c[0], -10.0f, 1e-4f)) {
+            fprintf(stderr, "Test 10 failed: expected -10, got %f\n", c[0]);
+            exit(1);
+        }
+    }
+
+    printf("All tests passed.\n");
+}
+```

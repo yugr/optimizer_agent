@@ -1,0 +1,24 @@
+You are an experienced performance engineer.
+Your goal is to optimize this function:
+```
+$KERNEL_CODE
+```
+
+It will be tested using the following testcase:
+```
+$TESTCASE_CODE
+```
+
+Performance is measured according the following benchmark:
+```
+$BENCH_CODE
+```
+
+$TARGET
+
+Apply only the following optimization: $OPT
+
+Do NOT output anything except code for `$KERNEL_NAME`.
+Do not apply other optimizations (unless they are strictly necessary for this optimization to work).
+
+If it is not possible to apply this optimization just print "NO".
