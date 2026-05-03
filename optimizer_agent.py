@@ -859,7 +859,12 @@ def main():
         action="count",
         default=1,
     )
-    parser.add_argument("file", help="code to optimize", metavar="ARG")
+    parser.add_argument(
+        "file",
+        help="code to optimize (can be '-' for stdin)",
+        nargs="?",
+        default="-",
+        metavar="FILE")
 
     args = parser.parse_args()
 
@@ -888,7 +893,10 @@ def main():
     # Work in temp directory
 
     args.gem5_path = Path(args.gem5_path).resolve()
-    args.file = Path(args.file).resolve()
+    if args.file != "-":
+        args.file = Path(args.file).resolve()
+    else:
+        args.file = make_temp(sys.stdin.read(), "kernel.c")
 
     global TMP
 
