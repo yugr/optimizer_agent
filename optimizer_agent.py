@@ -330,6 +330,8 @@ class AnthropicLLM(LLM):
             model=self.model,
         )
 
+        # TODO: check stop_reason
+
         ctx.append(ans)
 
         text = ""
