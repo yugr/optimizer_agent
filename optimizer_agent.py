@@ -221,6 +221,7 @@ LLM response:
             )
 
         if code_only:
+            # TODO: structured outputs ?
             ans = extract_code(ans)
 
         return ans
@@ -367,7 +368,7 @@ class Target:
         err: str
 
     @dataclass
-    class RuntimeError(BaseException):
+    class KernelRuntimeError(BaseException):
         "Info about runtime error."
         out: str
         err: str
@@ -434,7 +435,7 @@ class AArch64Target(Target):
 
             rc, o, e, _ = run(f"{self.qemu} ./a.out")
             if rc != 0:
-                raise Target.RuntimeError(o, e)
+                raise Target.KernelRuntimeError(o, e)
 
         # Also test with clang
         rc, o, e, _ = run(f"{self.cc} -O2 " + " ".join(files))
@@ -448,7 +449,7 @@ class AArch64Target(Target):
 
         rc, o, *_ = run(f"{self.sim} ./a.out", timeout=timeout)
         if rc != 0:
-            raise Target.RuntimeError(o, e)
+            raise Target.KernelRuntimeError(o, e)
 
         m = re.search(r"exiting with last active thread context.* @ ([0-9]+)", o)
         if m is None:
@@ -505,7 +506,7 @@ int main() {
             return test_code
         except Target.CompileError as e:
             test_code = update("compile", e)
-        except Target.RuntimeError as e:
+        except Target.KernelRuntimeError as e:
             test_code = update("run successfully", e)
 
         if test_code is None:
@@ -576,7 +577,7 @@ void bench_N() {{
             return bench_code, harness_code
         except Target.CompileError as e:
             bench_code = update("compile", e)
-        except Target.RuntimeError as e:
+        except Target.KernelRuntimeError as e:
             bench_code = update("run successfully", e)
         except subprocess.TimeoutExpired:
             bench_code = update_timeout()
@@ -669,7 +670,7 @@ class TreeNode:
                 return kernel_code, priority
             except Target.CompileError as e:
                 kernel_code = update("compile", e)
-            except Target.RuntimeError as e:
+            except Target.KernelRuntimeError as e:
                 kernel_code = update("run successfully", e)
             except subprocess.TimeoutExpired:
                 # Likely slowdown
@@ -747,6 +748,7 @@ def main_loop(
 
     while q and trial < MAX_TRIALS:
         if VERBOSE > 1:
+            # TODO: also report tokens/cost
             print(
                 f"Trial #{trial}: {len(q)} items in queue, best improvement +{100 * improvement:.1f}%"
             )
@@ -755,7 +757,7 @@ def main_loop(
         # TODO: use MCTS rather than priorities with random exploration
         if random.randint(0, 100) / 100 > EXPLORE_FACTOR:
             reason = "best"
-            cand = q.pop()
+            cand = heappop(q)
         else:
             reason = "random"
             k = random.randint(0, len(q) - 1)
@@ -809,7 +811,7 @@ def main():
     parser.add_argument(
         "-f",
         "--fanout",
-        help="how many times to retry LLM codegen on fail",
+        help="how many optimizations to try each time",
         default=FANOUT,
         type=int,
     )
