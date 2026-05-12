@@ -2,8 +2,9 @@
 
 This is a simple PoC AI agent for optimizing C programs via LLMs.
 
-Some design decisions:
-  - not using Claude Tools API because of portability concerns
+Probably this should be rewritten to use Claude Tools API
+so that LLM drives the search (rather than follows the current MCTS-like
+heuristic).
 
 # How to run
 
