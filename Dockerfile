@@ -10,6 +10,7 @@
 #     -e ANTHROPIC_API_KEY="sk-..." \
 #     [-e ANTHROPIC_AUTH_TOKEN="..."] \
 #     [-e ANTHROPIC_BASE_URL="https://..."] \
+#     -v $PWD:/work
 #     optimizer_agent -m sonnet --max-trials 10 -v < kernel.c
 #
 # Volumes:
@@ -21,7 +22,7 @@ FROM debian:bookworm-slim
 LABEL maintainer="optimizer_agent image" \
       description="LLM-based C optimizer agent with gem5/ARM cross-build support"
 
-ENV DEBIAN_FRONTEND=noninteractive
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Standard development tools
 
